@@ -2,14 +2,14 @@
   "name": "screencat",
   "version": "4.2.0",
   "description": "webrtc screensharing with shared mouse and keyboard",
-  "main": "electron.js",
+  "main": "run.js",
   "scripts": {
-    "start": "electron electron.js --enable-logging",
+    "start": "electron run.js --enable-logging",
     "build": "electron-packager . ScreenCat --platform=darwin --arch=x64 --version=0.36.0 --protocol-name=\"ScreenCat URL\" --protocol=\"screencat\" --ignore=node_modules/electron-prebuilt --ignore=node_modules/electron-packager --ignore=node_modules/browserify --ignore=node_modules/wzrd --ignore=node_modules/standard && cp img/Icon.icns ScreenCat.app/Contents/Resources/atom.icns",
     "css": "node-sass stylesheets/sass/screencat.scss stylesheets/css/screencat.css --watch",
     "test": "standard",
     "rebuild": "cd node_modules/robotjs && set HOME=~/.electron-gyp && node-gyp rebuild --target=0.36.0 --arch=x64 --dist-url=https://atom.io/download/atom-shell",
-    "lobby": "cat-lobby",
+    "server": "node server",
     "bundle": "browserify -o remote-bundle.js -e remote.js",
     "web" :"node server.js"
   },
@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "browserify": "^9.0.3",
-    "cat-lobby": "git+https://github.com/maxogden/cat-lobby.git",
     "electron-packager": "^4.1.0",
     "electron-prebuilt": "^0.36.0",
     "electron-rebuild": "^1.4.0",
