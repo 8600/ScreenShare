@@ -1,4 +1,5 @@
 /* global screen */
+console.log("sd");
 var robot = require('robotjs')
 window.robot = robot
 var vkey = require('vkey')

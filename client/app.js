@@ -32,10 +32,10 @@ mdns.on('response', function (res) {
     }
   })
 });
-
+//P2P连接
 peerConnection.on('connected', function connected (newPeer, remote) {
   peer = newPeer;
-  console.log(peer);
+  console.log("P2P连接");
   if (!remote) {
     ipc.send('icon', 'connected')
     ui.show(ui.containers.sharing)
@@ -56,30 +56,26 @@ peerConnection.on('connected', function connected (newPeer, remote) {
     ipc.send('icon', 'disconnected')
     showChoose()
   })
-})
-
-ipc.on('open-url', function (lnk) {
-  console.log('open url', lnk)
-})
+});
 
 ipc.on('connected', function () {
   ui.hide(ui.containers.content)
   ui.show(ui.containers.viewing)
-})
+});
 
 ipc.on('disconnected', function () {
-  console.log('disconnected')
-  showChoose()
-})
+  console.log('连接中断');
+  showChoose();
+});
 
 ui.buttons.quit.addEventListener('click', function (e) {
-  ipc.send('terminate')
-})
+  ipc.send('terminate');
+});
 
 ui.buttons.destroy.addEventListener('click', function (e) {
-  if (peer) peer.destroy()
-  showChoose()
-})
+  if (peer) peer.destroy();
+  showChoose();
+});
 
 ui.buttons.share.addEventListener('click', function (e) {
   var sourcesList = document.querySelector('.capturer-list')
