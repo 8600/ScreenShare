@@ -1,79 +1,84 @@
-var path = require('path')
-var menubar = require('menubar')
-var BrowserWindow = require('browser-window')
-var ipc = require('ipc')
+"use strict";
+const path = require('path'),
+      menubar = require('menubar'),
+      BrowserWindow = require('browser-window'),
+      ipc = require('ipc'),
+      icons = {
+          connected: path.join(__dirname, 'img', 'IconRed.png'),
+          disconnected: path.join(__dirname, 'img', 'Icon.png')
+      },
+      mainWindows = menubar({
+          width: 700,
+          height: 300,
+          index: 'file://' + path.join(__dirname, 'app.html'),
+          icon: 'file://' + icons.disconnected
+      });
 
-var icons = {
-  connected: path.join(__dirname, 'img', 'IconRed.png'),
-  disconnected: path.join(__dirname, 'img', 'Icon.png')
-}
+let   win;
 
-var mb = menubar({
-  width: 700,
-  height: 300,
-  index: 'file://' + path.join(__dirname, 'app.html'),
-  icon: 'file://' + icons.disconnected
-})
+mainWindows.app.commandLine.appendSwitch('disable-renderer-backgrounding');
 
-var win
-
-mb.app.commandLine.appendSwitch('disable-renderer-backgrounding')
-
-mb.on('ready', function ready () {
-  console.log('ready')
-})
+mainWindows.on('ready', function ready () {
+  console.log('程序已启动');
+});
 
 ipc.on('icon', function (ev, key) {
-  mb.tray.setImage(icons[key])
-})
-
-mb.app.on('open-url', function (e, lnk) {
-  e.preventDefault()
-  if (mb.window) mb.window.webContents.send('open-url', lnk)
-})
+  console.log(`进入活动状态！`);
+  //更换任务栏图标
+  mainWindows.tray.setImage(icons[key]);
+});
 
 ipc.on('terminate', function terminate (ev) {
-  mb.app.terminate()
-})
+  console.log(`点击关闭按钮`);
+  mainWindows.app.quit();
+});
 
 ipc.on('resize', function resize (ev, data) {
-  mb.window.setSize(data.width, data.height)
-})
+  console.log(`改变窗口大小`);
+  mainWindows.window.setSize(data.width, data.height);
+});
 
 ipc.on('error', function error (ev, err) {
-  console.error(new Error(err.message))
-})
+  console.error(new Error(err.message));
+});
 
 ipc.on('create-window', function (ev, config) {
-  console.log('create-window', [config])
-  mb.app.dock.show()
-  win = new BrowserWindow({width: 720, height: 445})
-  win.loadUrl('file://' + path.join(__dirname, 'screen.html'))
+  console.log(`打开远程桌面窗口！`);
+  //显示托盘图标
+  mainWindows.app.dock.show();
+  win = new BrowserWindow({width: 720, height: 445});
+  win.loadUrl('file://' + path.join(__dirname, 'screen.html'));
 
   win.on('closed', function () {
-    mb.app.dock.hide()
-    mb.window.webContents.send('disconnected', true)
-  })
+    //隐藏托盘图标
+    mainWindows.app.dock.hide();
+    mainWindows.window.webContents.send('disconnected', true);
+  });
 
   ipc.once('window-ready', function () {
     // win.webContents.openDevTools()
-    win.webContents.send('peer-config', config)
-  })
+    console.log(`页面加载完毕！`);
+    win.webContents.send('peer-config', config);
+  });
 
   ipc.on('connected', function () {
-    mb.window.webContents.send('connected', true)
-  })
+    console.log(`连接成功！`);
+    mainWindows.window.webContents.send('connected', true);
+  });
 
   ipc.on('disconnected', function () {
-    mb.window.webContents.send('disconnected', true)
-  })
+    console.log(`disconnected`);
+    mainWindows.window.webContents.send('disconnected', true)
+  });
 
   ipc.on('show-window', function () {
-    win.show()
-  })
+    console.log(`显示主窗口`);
+    win.show();
+  });
 
   ipc.on('stop-viewing', function () {
-    win.close()
-    mb.window.webContents.send('disconnected', true)
-  })
-})
+    console.log(`关闭主窗口！`);
+    win.close();
+    mainWindows.window.webContents.send('disconnected', true);
+  });
+});

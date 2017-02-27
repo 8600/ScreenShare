@@ -1,28 +1,28 @@
+"use strict";
 /* global screen */
-var ipc = require('ipc')
-var clipboard = require('clipboard')
-var shell = require('shell')
-var desktopCapturer = require('desktop-capturer')
+const ipc = require('ipc'),
+      clipboard = require('clipboard'),
+      shell = require('shell'),
+      desktopCapturer = require('desktop-capturer'),
+      domify = require('domify'),
+      mdns = require('multicast-dns')(),//局域网自动发现
+      createPeerConnection = require('./peer.js'),
+      ui = require('./ui.js'),
+      connect = require('./connect.js');
 
-var domify = require('domify')
-var mdns = require('multicast-dns')()
-var createPeerConnection = require('./peer.js')
-var ui = require('./ui.js')
-var connect = require('./connect.js')
-
-var peer
-var peerConnection = createPeerConnection()
-window.ui = ui
-window.pc = peerConnection
+const peerConnection = createPeerConnection();
+let peer;
+window.ui = ui;
+window.pc = peerConnection;
 
 mdns.on('query', function (query) {
-  if (!ui.inputs.copy.value) return
+  if (!ui.inputs.copy.value) {return;}
   query.questions.forEach(function (q) {
     if (q.type === 'TXT' && q.name === 'screencat') {
       mdns.respond([{type: 'TXT', name: 'screencat', data: ui.inputs.copy.value}])
     }
-  })
-})
+  });
+});
 
 mdns.on('response', function (res) {
   res.answers.forEach(function (a) {
@@ -31,11 +31,11 @@ mdns.on('response', function (res) {
       ui.show(ui.containers.mdns)
     }
   })
-})
+});
 
 peerConnection.on('connected', function connected (newPeer, remote) {
-  peer = newPeer
-
+  peer = newPeer;
+  console.log(peer);
   if (!remote) {
     ipc.send('icon', 'connected')
     ui.show(ui.containers.sharing)
@@ -87,7 +87,7 @@ ui.buttons.share.addEventListener('click', function (e) {
   ui.hide(ui.containers.choose)
   ui.show(ui.buttons.back)
   try {
-    if (!peerConnection.robot) peerConnection.robot = require('./robot.js')
+    if (!peerConnection.robot) {peerConnection.robot = require('./robot.js')}
   } catch (e) {
     error(new Error('./robot.js failed to load'))
     error(e)
