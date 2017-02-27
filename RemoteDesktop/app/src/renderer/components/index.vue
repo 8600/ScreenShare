@@ -1,0 +1,29 @@
+<template lang="pug">
+  .box.box-two
+    .self.button 创建分享
+    .other.button 加入分享
+</template>
+<style lang="less">
+.box-two{
+    height: 125px;
+    background-color: skyblue;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .button{
+        height: 50px;
+        width: 120px;
+        margin: 10px;
+        font-size: 1.6rem;
+        line-height: 50px;
+        text-align: center;
+        color: lightseagreen;
+    }
+    .self{
+        background-color: bisque;
+    }
+    .other{
+        background-color: chartreuse;
+    }
+}
+</style>
