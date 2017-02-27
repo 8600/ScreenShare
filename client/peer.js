@@ -6,11 +6,10 @@ var nets = require('nets')
 var getUserMedia = require('./get-user-media.js')()
 
 module.exports = function create () {
-  // var server = 'http://catlobby.maxogden.com'
+  //var server = 'http://catlobby.maxogden.com'
   var server = 'http://localhost:5005'
   var remoteConfigUrl = 'https://instant.io/rtcConfig'
-  if (process.browser) remoteConfigUrl = 'https://crossorigin.me/' + remoteConfigUrl
-
+  if (process.browser) remoteConfigUrl = 'http://cors.maxogden.com/' + remoteConfigUrl
 
   var videoSize
 
@@ -160,7 +159,7 @@ module.exports = function create () {
         getUserMedia(constraints, function (videoStream) {
           // audio
           getUserMedia({audio: true, video: false}, function (audioStream) {
-            peer = new SimplePeer({ initiator: true, trickle: false, config: config })  
+            peer = new SimplePeer({ initiator: true, trickle: false, config: config })
             peer._pc.addStream(videoStream)
             peer._pc.addStream(audioStream)
             pc.emit('waiting-for-peer')
