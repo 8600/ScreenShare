@@ -5,6 +5,11 @@ export default [
     component: require('components/index')
   },
   {
+    path: '/select',
+    name: 'slect-page',
+    component: require('components/select')
+  },
+  {
     path: '*',
     redirect: '/'
   }

@@ -68,4 +68,10 @@ body {
   font-size: 0.8rem;
   overflow: hidden;
 }
+/* 滚动条样式 */
+::-webkit-scrollbar{width:14px;height: 7px;}
+::-webkit-scrollbar-track{background-color:#bee1eb;}
+::-webkit-scrollbar-thumb{background-color:#00aff0;}
+::-webkit-scrollbar-thumb:hover {background-color:#9c3}
+::-webkit-scrollbar-thumb:active {background-color:#00aff0}
 </style>
