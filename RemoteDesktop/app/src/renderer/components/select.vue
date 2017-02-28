@@ -18,6 +18,9 @@
             padding: 10px;
             display: flex;
             flex-direction: column;
+            img{
+                height:90px;
+            }
         }
     }
 }
