@@ -1,0 +1,182 @@
+  function verifyRoom (room, cb) {
+    // 确保房间仍然打开
+    nets({method: 'POST', uri: server + '/v1/' + room + '/pong', json: {ready: true}}, function response (err, resp, data) {
+      if (err) {return cb(err);}
+      if (resp.statusCode !== 200) {return cb(new Error('Invalid or expired invite code'));}
+      cb();
+    });
+  }
+
+  // try getusermedia and then upload sdp pong. this causes host to ping sdp back
+  function getAudio (cb) {
+    getUserMedia({audio: true, video: false}, function ok (stream) {
+      cb(null, stream);
+    },
+    function error (err) {
+      // 判读是否需要音频
+      if (err.name === 'PermissionDeniedError' || err.name === 'DevicesNotFoundError') {
+        cb();
+      } else {
+        cb(err);
+      }
+    });
+  }
+
+  function remotePeer (config, room, cb) {
+    // 监听pings
+    const pingsUrl = server + '/v1/' + room + '/pings';
+    console.log('获取到Ping', pingsUrl);
+    const events = new EventSource(pingsUrl);
+    events.onmessage = function onMessage (e) {
+      console.log('收到pings消息', e.data);
+      let row;
+      try {row = JSON.parse(e.data);} 
+      catch (e) {
+        row = {};
+        return cb(new Error('连接出错. 请重新连接.'));
+      }
+      if (!row.data) {return;}
+      inflate(row.data, function inflated (err, stringified) {
+        if (err) {return cb(err);}
+        pc.emit('getting-audio');
+        getAudio(function got (err, audioStream) {
+          if (err) {return handleRTCErr(err, cb);}
+          const peer = new SimplePeer({ trickle: false, config: config });
+          if (audioStream) {peer._pc.addStream(audioStream);}
+          peer.signal(JSON.parse(stringified.toString()));
+          cb(null, peer);
+        });
+      });
+      events.close();
+    };
+
+    events.onerror = function onError (e) {
+      cb(new Error('Error connecting. Please start over.'));
+      events.close();
+    };
+  }
+
+  function createRoom (cb) {
+    nets({method: 'POST', uri: server + '/v1'}, function response (err, resp, body) {
+      if (err) {return cb(err);}
+      const room = JSON.parse(body);
+      cb(null, room.name);
+    });
+  }
+
+  function hostPeer (opts, cb) {
+    const room = opts.room,
+          config = opts.config,
+          constraints = opts.constraints || defaultConstraints,
+          events = new EventSource(server + '/v1/' + room + '/pongs');
+    let   peer;
+
+    // 监听Pongs
+    events.onmessage = function onMessage (e) {
+      console.log('pongs onmessage', e.data);
+      let row;
+      try {row = JSON.parse(e.data);} 
+      catch (e) {
+        return cb(new Error('Error connecting. Please start over.'));
+      }
+
+      // 其他方面已准备就绪
+      if (row.ready) {
+        connect(row.data);
+      }
+
+      // sdp from other side
+      if (row.data) {
+        inflate(row.data, function inflated (err, stringified) {
+          if (err) {
+            return cb(new Error('Error connecting. Please start over.'))
+          }
+
+          peer.signal(JSON.parse(stringified.toString()))
+        });
+        events.close();
+      }
+
+      function connect (pong) {
+        // screensharing
+        getUserMedia(constraints, function (videoStream) {
+          // audio
+          getUserMedia({audio: true, video: false}, function (audioStream) {
+            peer = new SimplePeer({ initiator: true, trickle: false, config: config })
+            peer._pc.addStream(videoStream);
+            peer._pc.addStream(audioStream);
+            pc.emit('waiting-for-peer');
+            cb(null, peer);
+          }, function (err) { handleRTCErr(err, cb); });
+        }, function (err) { handleRTCErr(err, cb); });
+      }
+    };
+
+    events.onerror = function onError (e) {
+      cb(e);
+      events.close();
+    };
+  }
+
+  function handleRTCErr (err, cb) {
+    if (err.name === 'PermissionDeniedError') {
+      console.error('permission denied');
+      console.error(err);
+      cb(new Error('Screensharing permission denied'));
+    } else {
+      console.error('Unknown error', err);
+      cb(err);
+    }
+  }
+
+  function handleSignal (sdp, peer, remote, room, cb) {
+    deflate(sdp, function deflated (err, data) {
+      if (err) {return cb(err);}
+
+      // upload sdp
+      let uploadURL = server + '/v1/' + room;
+      if (remote) {uploadURL += '/pong';}
+      else {uploadURL += '/ping';}
+
+      console.log('POST', uploadURL);
+      nets({method: 'POST', json: {data: data}, uri: uploadURL}, function response (err, resp, body) {
+        if (err || resp.statusCode > 299) {return cb(err);}
+        cb(null);
+      });
+    });
+  }
+
+
+
+  function videoElement (stream) {
+    const video = document.createElement('video');
+    video.src = window.URL.createObjectURL(stream);
+    video.autoplay = true;
+    return video;
+  }
+
+  function audioElement (stream) {
+    const audio = document.createElement('audio');
+    audio.src = window.URL.createObjectURL(stream);
+    audio.autoplay = true;
+    return audio;
+  }
+
+  function inflate (data, cb) {
+    data = decodeURIComponent(data.toString());
+    zlib.inflate(new Buffer(data, 'base64'), cb);
+  }
+
+  function deflate (data, cb) {
+    // sdp is ~2.5k usually, that's too big for a URL, so we zlib deflate it
+    const stringified = JSON.stringify(data);
+    zlib.deflate(stringified, function (err, deflated) {
+      if (err) {
+        cb(err);
+        return;
+      }
+      const connectionString = deflated.toString('base64');
+      const code = encodeURIComponent(connectionString);
+      cb(null, code);
+    });
+  }
