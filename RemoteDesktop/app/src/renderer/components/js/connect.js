@@ -45,11 +45,9 @@ module.exports.remote = function (peerConnection, config, room) {
 
 module.exports.host = function (peerConnection, opts={}) {
   getARoom(peerConnection, function (err, room, config) {
-    if (err) {
-      console.log(`出现错误:${err}`);
-      return;
-    }
-    console.log(room);
+    if (err) {console.log(`出现错误:${err}`);}
+    console.log(`创建房间${room}`);
+    return null;
   });
 };
 
@@ -65,7 +63,6 @@ function renderStreams (peerConnection, stream) {
 //获取房间
 function getARoom (peerConnection, cb) {
   peerConnection.createRoom(function (err, room) {
-    console.log(room);
     cb(err, room, null);
   });
 }
