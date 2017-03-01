@@ -45,9 +45,10 @@ module.exports.remote = function (peerConnection, config, room) {
 
 module.exports.host = function (peerConnection, opts={}) {
   getARoom(peerConnection, function (err, room, config) {
-    if (err) {console.log(`出现错误:${err}`);}
+    if (err) {console.log(`出现错误:${err}`);return null;}
     console.log(`创建房间${room}`);
-    return null;
+    opts.room = room;
+    opts.config = config;
   });
 };
 
