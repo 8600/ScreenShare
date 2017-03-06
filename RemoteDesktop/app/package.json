@@ -4,6 +4,7 @@
   "description": "An electron-vue project",
   "main": "./dist/main.js",
   "dependencies": {
+    "multicast-dns": "^6.1.0",
     "nets": "^3.2.0",
     "simple-peer": "^6.4.4",
     "vue": "^2.1.10",

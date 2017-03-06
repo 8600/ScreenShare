@@ -7,6 +7,7 @@
 <script>
     const desktopCapturer = require('electron').desktopCapturer,
           createPeerConnection = require('./js/peer.js'),
+          mdns = require('multicast-dns')(),
           connect = require('./js/connect.js');
     export default {
         data(){
@@ -32,6 +33,12 @@
                peer.on('close', function close () {
                    console.log("P2P连接关闭")
                })
+            });
+            mdns.on('query', function (query) {
+                console.log(query)
+            });
+            mdns.on('response', function (res) {
+                console.log(res)
             });
            desktopCapturer.getSources({types: ['window', 'screen']}, function (err, sources) {
                //错误处理
@@ -70,7 +77,7 @@
                 }
                 //连接服务器创建房间
                 connect.host(this.peerConnection, opts)
-                window.location.href='/'
+                //window.location.href='/'
                 return false
             },
         },
