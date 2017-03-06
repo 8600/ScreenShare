@@ -4,24 +4,6 @@
       img(v-bind:src="value")
       span {{key}}
 </template>
-<style lang="less">
-.box-three{
-    height: 125px;
-    display: flex;
-    background-color: aqua;
-    overflow-x: auto;
-    overflow-y: hidden;
-    li{
-        height:125px;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        img{
-            height:90px;
-        }
-    }
-}
-</style>
 <script>
     const desktopCapturer = require('electron').desktopCapturer,
           createPeerConnection = require('./js/peer.js'),
@@ -88,6 +70,7 @@
                 }
                 //连接服务器创建房间
                 connect.host(this.peerConnection, opts)
+                window.location.href='/'
                 return false
             },
         },
@@ -95,5 +78,20 @@
 </script>
 
 <style lang="less">
-
+.box-three{
+    height: 125px;
+    display: flex;
+    background-color: aqua;
+    overflow-x: auto;
+    overflow-y: hidden;
+    li{
+        height:125px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        img{
+            height:90px;
+        }
+    }
+}
 </style>
