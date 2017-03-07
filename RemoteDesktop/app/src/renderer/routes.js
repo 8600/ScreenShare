@@ -10,6 +10,11 @@ export default [
     component: require('components/select')
   },
   {
+    path: '/join',
+    name: 'join-page',
+    component: require('components/join')
+  },
+  {
     path: '*',
     redirect: '/'
   }

@@ -1,7 +1,7 @@
 <template lang="pug">
   .box.box-two
     router-link.self.button(to="/select") 创建分享
-    .other.button 加入分享
+    router-link.other.button(to="/join") 加入分享
 </template>
 
 <style lang="less">
