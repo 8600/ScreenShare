@@ -9,13 +9,13 @@
     const desktopCapturer = require('electron').desktopCapturer,
           createPeerConnection = require('./js/peer.js'),
           mdns = require('multicast-dns')(),
-          connect = require('./js/connect.js');
+          connect = require('./js/connect.js'),
+          peerConnection = createPeerConnection();
     export default {
         data(){
             return{
                 windowList: {},
-                sources:{},
-                peerConnection:null
+                sources:{}
             }
         },
         created:function(){
@@ -26,7 +26,8 @@
             mdns.on('response', function (res) {
                 console.log(res)
             });
-            var interval = setInterval(query, 1000)
+            var interval = setInterval(query, 3000)
+            console.log(peerConnection)
             query()
             connect.verifyUserRoom(peerConnection, ui, function (err, room, config) {
                 console.log("sd");
