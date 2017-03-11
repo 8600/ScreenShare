@@ -1,8 +1,7 @@
 "use strict";
 const duplex = require('duplexify'),
       ssejson = require('ssejson'),
-      pumpify = require('pumpify'),
-      debug = require('debug')('cat-lobby-alpha-api');
+      pumpify = require('pumpify');
 
 module.exports = function (state, utils) {
   function createHandler (req, res, opts, cb) {
@@ -24,7 +23,7 @@ module.exports = function (state, utils) {
       destroy(room);
     }, 1000 * 60); // 30 mins
     state.timeouts.push(tId);
-    debug('create', {name: room});
+    console.log(`创建房间${room}`);
   }
 
   function pingHandler (req, res, opts, cb) {

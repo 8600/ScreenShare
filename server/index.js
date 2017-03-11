@@ -5,7 +5,6 @@ const http = require('http'),
       concat = require('concat-stream'),
       pumpify = require('pumpify'),
       corsify = require('corsify'),
-      debug = require('debug')('cat-lobby'),
       limitStream = require('./limit-stream.js');
 
 module.exports = function create (lobbyOpts) {
@@ -25,22 +24,22 @@ module.exports = function create (lobbyOpts) {
         const server = http.createServer(handler);
 
         function handler (req, res) {
-            debug(req.url, 'request/response start');
+            console.log(`${req.url}请求开始`);
             // https重定向
             if (req.headers['x-forwarded-proto'] === 'http') {
                 const httpsURL = 'https://' + req.headers.host + req.url;
-                debug('https redirect', httpsURL);
+                console.log(`https重定向${httpsURL}`);
                 res.writeHead(302, {'Location': httpsURL });
                 res.end();
                 return;
             }
 
             req.on('end', function logReqEnd () {
-                debug(req.url, 'request end');
+                console.log(`${req.url}请求结束`);
             });
 
             res.on('end', function logResEnd () {
-                debug(req.url, 'response end');
+                console.log(`${req.url}响应结束`);
             });
 
             cors(route)(req, res);
@@ -51,7 +50,7 @@ module.exports = function create (lobbyOpts) {
 
             function onError (err) {
                 if (err) {
-                    debug('error', {path: req.url, message: err.message});
+                    console.log(`错误:${{path: req.url, message: err.message}}`);
                     res.statusCode = err.statusCode || 500;
                     res.end(JSON.stringify({name: err.message}));
                 }
