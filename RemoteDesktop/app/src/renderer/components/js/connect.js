@@ -49,6 +49,27 @@ module.exports.host = function (peerConnection, opts={}) {
     console.log(`创建房间${room}`);
     opts.room = room;
     opts.config = config;
+    peerConnection.hostPeer(opts, function (err, peer) {
+      if (err) { console.error("发生错误:${err.message}"); return; }
+      if (!room) { console.error("发生错误:房间不存在");return; }
+
+      peer.on('stream', function (stream) { renderStreams(peerConnection, stream) })
+
+      peer.on('signal', function (sdp) {
+        peerConnection.handleSignal(sdp, peer, false, room, function (err) {
+          if (err) {console.log(`出现错误:${err}`);return null;}
+        });
+      });
+
+      if (peer.connected) {
+        peerConnection.onConnect(peer, false);
+      }
+      else {
+        peer.on('connect', function () { 
+          peerConnection.onConnect(peer, false); 
+        });
+      }
+    });
   });
 };
 

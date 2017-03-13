@@ -1,8 +1,8 @@
 <template lang="pug">
 .box.join-box
     .input-box
-        input(type="text")
-        .ok 加入
+        input(type="text",v-model="text")
+        .ok(v-on:click.stop="join") 加入
 </template>
 
 <script>
@@ -15,32 +15,46 @@
         data(){
             return{
                 windowList: {},
-                sources:{}
+                sources:{},
+                text:""
             }
         },
         created:function(){
             const _this=this;
             mdns.on('query', function (query) {
-                console.log(query)
+                query.questions.forEach(function (q) {
+                    if (q.type === 'TXT' && q.name === 'screencat') {
+                        console.log(query)
+                        // mdns.respond([{type: 'TXT', name: 'screencat', data: ui.inputs.copy.value}])
+                    }
+                });
             });
             mdns.on('response', function (res) {
-                console.log(res)
+                //console.log(res)
             });
-            var interval = setInterval(query, 3000)
+            //const interval = setInterval(query, 30000)
             console.log(peerConnection)
             query()
-            connect.verifyUserRoom(peerConnection, ui, function (err, room, config) {
+            connect.verifyUserRoom(peerConnection, function (err, room, config) {
                 console.log("sd");
                 clearInterval(interval)
                 if (err) {
-                    ui.inputs.paste.value = 'Error! ' + err.message
+                    console.log(`Error${err.message}`)
                     return
                 }
-                ui.inputs.paste.value = 'Waiting on other side...'
+                console.log(`Waiting on other side...`)
                 ipc.send('create-window', {config: config, room: room})
             })
             function query () {
                 mdns.query([{type: 'TXT', name: 'screencat'}])
+            }
+        },
+        methods:{
+            join(){
+                // if (!room) return
+                // peerConnection.verifyRoom(room, function (err) {
+                //     cb(err, room, config)
+                // })
             }
         },
     }

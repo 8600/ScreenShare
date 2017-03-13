@@ -77,8 +77,6 @@
                 }
                 //连接服务器创建房间
                 connect.host(this.peerConnection, opts)
-                //window.location.href='/'
-                return false
             },
         },
     }
