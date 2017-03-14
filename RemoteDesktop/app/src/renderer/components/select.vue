@@ -5,7 +5,7 @@
       span {{key}}
 </template>
 <script>
-    const desktopCapturer = require('electron').desktopCapturer,
+    let desktopCapturer = require('electron').desktopCapturer,
           createPeerConnection = require('./js/peer.js'),
           mdns = require('multicast-dns')(),
           connect = require('./js/connect.js');

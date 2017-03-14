@@ -50,7 +50,8 @@ module.exports = function create (lobbyOpts) {
 
             function onError (err) {
                 if (err) {
-                    console.log(`错误:${{path: req.url, message: err.message}}`);
+                    console.error(`错误:${req.url}`);
+                    console.error(`错误:${err.message}`);
                     res.statusCode = err.statusCode || 500;
                     res.end(JSON.stringify({name: err.message}));
                 }

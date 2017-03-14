@@ -14,8 +14,8 @@ function onConnect (peer, remote) {
   pc.emit('connected', peer, remote);
   let video;
   if (remote) {
-    window.addEventListener('mouseup', mouseupListener)
-    window.addEventListener('keydown', keydownListener)
+    window.addEventListener('mouseup', mouseupListener);
+    window.addEventListener('keydown', keydownListener);
   }
   if (!remote) {
     peer.on('data', function (data) {
@@ -89,8 +89,8 @@ const defaultConstraints = {
 };
 
 function inflate (data, cb) {
-  data = decodeURIComponent(data.toString())
-  zlib.inflate(new Buffer(data, 'base64'), cb)
+  data = decodeURIComponent(data.toString());
+  zlib.inflate(new Buffer(data, 'base64'), cb);
 }
 
 function handleRTCErr (err, cb) {
@@ -129,7 +129,7 @@ function hostPeer (opts, cb) {
         if (err) {
           return cb(new Error('Error connecting. Please start over.'));
         }
-        peer.signal(JSON.parse(stringified.toString()))
+        peer.signal(JSON.parse(stringified.toString()));
       });
       events.close();
     }
@@ -139,7 +139,7 @@ function hostPeer (opts, cb) {
       getUserMedia(constraints, function (videoStream) {
         // audio
         getUserMedia({audio: true, video: false}, function (audioStream) {
-          peer = new SimplePeer({ initiator: true, trickle: false, config: config })
+          peer = new SimplePeer({ initiator: true, trickle: false, config: config });
           peer._pc.addStream(videoStream);
           peer._pc.addStream(audioStream);
           pc.emit('waiting-for-peer');
@@ -155,11 +155,49 @@ function hostPeer (opts, cb) {
   };
 }
 
+//深拷贝
+function shadowCopy(src) {
+  var dst = {};
+  for (var prop in src) {
+    if (src.hasOwnProperty(prop)) {
+      dst[prop] = src[prop];
+    }
+  }
+  return dst;
+}
+
+function deflate (data, cb) {
+  // sdp is ~2.5k usually, that's too big for a URL, so we zlib deflate it
+  const date = `{"type":${data.type},"sdp":${data.sdp}}`;
+  zlib.deflate(date, function (err, deflated) {
+    if (err) { cb(err); return;}
+    var connectionString = deflated.toString('base64');
+    var code = encodeURIComponent(connectionString);
+    cb(null, code);
+  });
+}
+
+function handleSignal (sdp, peer, remote, room, cb) {
+  deflate(sdp, function deflated (err, data) {
+    if (err) {cb(err);return;}
+    // upload sdp
+    var uploadURL = server + '/v1/' + room;
+    if (remote) {uploadURL += '/pong';}
+    else {uploadURL += '/ping';}
+    console.log('POST', uploadURL);
+    nets({method: 'POST', json: {data: data}, uri: uploadURL}, function response (err, resp, body) {
+      if (err || resp.statusCode > 299) {return cb(err);}
+      cb(null);
+    });
+  });
+}
+
 module.exports = function create () {
   pc = new events.EventEmitter();
   pc.onConnect = onConnect;
   pc.createRoom = createRoom;
   pc.hostPeer = hostPeer;
   pc.getRemoteConfig = getRemoteConfig;
+  pc.handleSignal = handleSignal;
   return pc;
 };

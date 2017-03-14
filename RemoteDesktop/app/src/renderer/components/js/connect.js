@@ -17,27 +17,23 @@ module.exports.verifyUserRoom = function (peerConnection, cb) {
 module.exports.remote = function (peerConnection, config, room) {
   peerConnection.remotePeer(config, room, function (err, peer) {
     if (err) {
-      ui.inputs.paste.value = 'Error! ' + err.message;
+      console.error(`发生错误：${err.message}`);
       return;
     }
-
     if (!room) {
-      ui.inputs.paste.value = 'Error! Please Quit';
+      console.error(`发生错误：房间不存在`);
       return;
     }
-
     peer.on('stream', function (stream) { renderStreams(peerConnection, stream); });
-
     peer.on('signal', function (sdp) {
       peerConnection.handleSignal(sdp, peer, true, room, function (err) {
         if (err) {
-          ui.containers.content.innerHTML = 'Error! Please Quit. ' + err.message;
+          console.error(`发生错误：${err.message}`);
           return;
         }
-        console.log('SDP POST DONE')
+        console.log('请求完成');
       });
     });
-
     if (peer.connected) {peerConnection.onConnect(peer, true);}
     else {peer.on('connect', function () { peerConnection.onConnect(peer, true) ;});}
   });
@@ -50,10 +46,10 @@ module.exports.host = function (peerConnection, opts={}) {
     opts.room = room;
     opts.config = config;
     peerConnection.hostPeer(opts, function (err, peer) {
-      if (err) { console.error("发生错误:${err.message}"); return; }
+      if (err) { console.error(`发生错误:${err.message}`); return; }
       if (!room) { console.error("发生错误:房间不存在");return; }
 
-      peer.on('stream', function (stream) { renderStreams(peerConnection, stream) })
+      peer.on('stream', function (stream) { renderStreams(peerConnection, stream); });
 
       peer.on('signal', function (sdp) {
         peerConnection.handleSignal(sdp, peer, false, room, function (err) {
