@@ -62,9 +62,12 @@ function onConnect (peer, remote) {
 }
 
 function createRoom (cb) {
+  console.log("向服务器发送消息");
   nets({method: 'POST', uri: server + '/v1'}, function response (err, resp, body) {
     if (err) {return cb(err);}
     const room = JSON.parse(body);
+    console.log("从服务器收到消息");
+    console.log(room);
     cb(null, room.name);
   });
 }
@@ -104,27 +107,41 @@ function handleRTCErr (err, cb) {
   }
 }
 
+//和服务器连接
+function connect (constraints, peer, cb) {
+  console.log("开始和服务器建立连接",constraints);
+  // 屏幕共享
+  getUserMedia(constraints, function (videoStream) {
+    // audio
+    getUserMedia({audio: true, video: false}, function (audioStream) {
+      peer = new SimplePeer({ initiator: true, trickle: false });
+      peer._pc.addStream(videoStream);
+      peer._pc.addStream(audioStream);
+      pc.emit('等待连接成功');
+      cb(null, peer);
+    }, function (err) { handleRTCErr(err, cb); });
+  }, function (err) { handleRTCErr(err, cb); });
+}
+
 function hostPeer (opts, cb) {
   const room = opts.room,
-        config = opts.config,
         constraints = opts.constraints || defaultConstraints;
   let   peer;
+  console.log("开始P2P连接");
   // 监听 pongs
   const events = new EventSource(server + '/v1/' + room + '/pongs');
+  console.log(events);
   events.onmessage = function onMessage (e) {
-    console.log('pongs onmessage', e.data);
-    let row;
-    try {
-      row = JSON.parse(e.data);
-    } catch (e) {
-      return cb(new Error('Error connecting. Please start over.'));
-    }
+    console.log('P2P连接成功', e.data);
+    const row = JSON.parse(e.data);
     // other side is ready
     if (row.ready) {
-      connect(row.data);
+      console.log("P2P传输就绪");
+      connect(constraints, peer, cb);
     }
     // sdp from other side
     if (row.data) {
+      console.log("SDP传输就绪");
       inflate(row.data, function inflated (err, stringified) {
         if (err) {
           return cb(new Error('Error connecting. Please start over.'));
@@ -134,37 +151,16 @@ function hostPeer (opts, cb) {
       events.close();
     }
     
-    function connect (pong) {
-      // screensharing
-      getUserMedia(constraints, function (videoStream) {
-        // audio
-        getUserMedia({audio: true, video: false}, function (audioStream) {
-          peer = new SimplePeer({ initiator: true, trickle: false, config: config });
-          peer._pc.addStream(videoStream);
-          peer._pc.addStream(audioStream);
-          pc.emit('waiting-for-peer');
-          cb(null, peer);
-        }, function (err) { handleRTCErr(err, cb); });
-      }, function (err) { handleRTCErr(err, cb); });
-    }
+    
   };
   
   events.onerror = function onError (e) {
+    console.log("与服务器连接失败");
     cb(e);
     events.close();
   };
 }
 
-//深拷贝
-function shadowCopy(src) {
-  var dst = {};
-  for (var prop in src) {
-    if (src.hasOwnProperty(prop)) {
-      dst[prop] = src[prop];
-    }
-  }
-  return dst;
-}
 
 function deflate (data, cb) {
   // sdp is ~2.5k usually, that's too big for a URL, so we zlib deflate it

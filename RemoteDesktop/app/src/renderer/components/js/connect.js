@@ -17,7 +17,7 @@ module.exports.verifyUserRoom = function (peerConnection, cb) {
 module.exports.remote = function (peerConnection, config, room) {
   peerConnection.remotePeer(config, room, function (err, peer) {
     if (err) {
-      console.error(`发生错误：${err.message}`);
+      console.error(`发生错误：${err}`);
       return;
     }
     if (!room) {
@@ -40,13 +40,13 @@ module.exports.remote = function (peerConnection, config, room) {
 };
 
 module.exports.host = function (peerConnection, opts={}) {
-  getARoom(peerConnection, function (err, room, config) {
+  //向服务器获取房间
+  peerConnection.createRoom(function (err, room) {
     if (err) {console.log(`出现错误:${err}`);return null;}
     console.log(`创建房间${room}`);
     opts.room = room;
-    opts.config = config;
     peerConnection.hostPeer(opts, function (err, peer) {
-      if (err) { console.error(`发生错误:${err.message}`); return; }
+      if (err) { console.error(err); return; }
       if (!room) { console.error("发生错误:房间不存在");return; }
 
       peer.on('stream', function (stream) { renderStreams(peerConnection, stream); });
@@ -75,12 +75,5 @@ function renderStreams (peerConnection, stream) {
   });
   stream.getVideoTracks().forEach(function each (track) {
     var video = peerConnection.videoElement(stream);
-  });
-}
-
-//获取房间
-function getARoom (peerConnection, cb) {
-  peerConnection.createRoom(function (err, room) {
-    cb(err, room, null);
   });
 }
