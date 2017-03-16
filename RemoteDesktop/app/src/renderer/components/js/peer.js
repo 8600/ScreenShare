@@ -111,13 +111,16 @@ function handleRTCErr (err, cb) {
 function connect (constraints, peer, cb) {
   console.log("开始和服务器建立连接",constraints);
   // 屏幕共享
+  console.log("开始获取视频资源");
   getUserMedia(constraints, function (videoStream) {
     // audio
+    console.log("开始获取音频资源");
     getUserMedia({audio: true, video: false}, function (audioStream) {
       peer = new SimplePeer({ initiator: true, trickle: false });
       peer._pc.addStream(videoStream);
       peer._pc.addStream(audioStream);
       pc.emit('等待连接成功');
+      console.log("等待连接成功");
       cb(null, peer);
     }, function (err) { handleRTCErr(err, cb); });
   }, function (err) { handleRTCErr(err, cb); });
