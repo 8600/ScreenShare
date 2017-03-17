@@ -36,12 +36,12 @@
                     console.log("P2P连接关闭")
                 })
             });
-            // mdns.on('query', function (query) {
-            //     console.log(query)
-            // });
-            // mdns.on('response', function (res) {
-            //     console.log(res)
-            // });
+            mdns.on('query', function (query) {
+                console.log(query)
+            });
+            mdns.on('response', function (res) {
+                console.log(res)
+            });
            desktopCapturer.getSources({types: ['window', 'screen']}, function (err, sources) {
                //错误处理
                if (err) return error(err)

@@ -26,13 +26,7 @@ module.exports.remote = function (peerConnection, config, room) {
     }
     peer.on('stream', function (stream) { renderStreams(peerConnection, stream); });
     peer.on('signal', function (sdp) {
-      peerConnection.handleSignal(sdp, peer, true, room, function (err) {
-        if (err) {
-          console.error(`发生错误：${err.message}`);
-          return;
-        }
-        console.log('请求完成');
-      });
+      peerConnection.handleSignal(sdp, peer, true, room);
     });
     if (peer.connected) {peerConnection.onConnect(peer, true);}
     else {peer.on('connect', function () { peerConnection.onConnect(peer, true) ;});}
@@ -54,9 +48,10 @@ module.exports.host = function (peerConnection, opts={}) {
 
       peer.on('signal', function (sdp) {
         console.log("收到P2P信号");
-        peerConnection.handleSignal(sdp, peer, false, room, function (err) {
-          if (err) {console.log(`出现错误:${err}`);return null;}
-        });
+        console.log("SDP:",sdp);
+        console.log("Peer:",peer);
+        console.log("Room:",room);
+        peerConnection.handleSignal(sdp, peer, false, room);
       });
 
       if (peer.connected) {

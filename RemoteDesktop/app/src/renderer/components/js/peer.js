@@ -152,9 +152,7 @@ function hostPeer (opts, cb) {
         peer.signal(JSON.parse(stringified.toString()));
       });
       events.close();
-    }
-    
-    
+    }    
   };
   
   events.onerror = function onError (e) {
@@ -165,28 +163,22 @@ function hostPeer (opts, cb) {
 }
 
 
-function deflate (data, cb) {
-  // sdp is ~2.5k usually, that's too big for a URL, so we zlib deflate it
-  const date = `{"type":${data.type},"sdp":${data.sdp}}`;
+function handleSignal (sdp, peer, remote, room) {
+  // SDP数据通常大于2.5k, 它对于Url来说太大了, 所以我们将它压缩
+  const date = `{"type":${sdp.type},"sdp":${sdp.sdp}}`;
+  console.log("准备开始压缩数据",date);
   zlib.deflate(date, function (err, deflated) {
-    if (err) { cb(err); return;}
-    var connectionString = deflated.toString('base64');
-    var code = encodeURIComponent(connectionString);
-    cb(null, code);
-  });
-}
-
-function handleSignal (sdp, peer, remote, room, cb) {
-  deflate(sdp, function deflated (err, data) {
-    if (err) {cb(err);return;}
-    // upload sdp
-    var uploadURL = server + '/v1/' + room;
+    if (err) { return;}
+    console.log("数据压缩成功", deflated);
+    const connectionString = deflated.toString('base64');
+    const code = encodeURIComponent(connectionString);
+    let uploadURL = server + '/v1/' + room;
     if (remote) {uploadURL += '/pong';}
     else {uploadURL += '/ping';}
     console.log('POST', uploadURL);
-    nets({method: 'POST', json: {data: data}, uri: uploadURL}, function response (err, resp, body) {
-      if (err || resp.statusCode > 299) {return cb(err);}
-      cb(null);
+    nets({method: 'POST', json: {data: code}, uri: uploadURL}, function response (err, resp, body) {
+      if (err || resp.statusCode > 299) {console.log('请求失败'); return;}
+      console.log('请求完成');
     });
   });
 }
