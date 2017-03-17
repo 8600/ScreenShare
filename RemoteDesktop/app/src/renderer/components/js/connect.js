@@ -2,7 +2,6 @@
 module.exports.verifyUserRoom = function (peerConnection, cb) {
   peerConnection.getRemoteConfig(function (err, config) {
     if (err) {return cb(err);}
-
     function onJoinClick (ev) {
       ev.preventDefault();
       var room = ui.inputs.paste.value;
