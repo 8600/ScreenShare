@@ -21,9 +21,10 @@
         created:function(){
             console.log("[选择窗口]页面加载成功")
             const _this=this;
-            _this.peerConnection = createPeerConnection();
+            this.peerConnection = createPeerConnection();
+            console.log(this.peerConnection)
             //P2P连接
-            _this.peerConnection.on('connected', function connected (newPeer, remote) {
+            this.peerConnection.on('connected', function connected (newPeer, remote) {
                 peer = newPeer;
                 console.log("P2P连接成功");
                 //连接错误处理

@@ -1,0 +1,26 @@
+.left {
+  float: left;
+  display: block;
+}
+
+.btn {
+  border-radius: 0;
+  cursor: pointer;
+  cursor: hand;
+}
+
+.cr {
+  overflow: auto;
+}
+
+.multimedia-container video {
+  width: 100%;
+}
+
+.content-container.w-50 {
+  margin: auto;
+}
+
+a {
+  color: black;
+}
