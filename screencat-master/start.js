@@ -2,10 +2,10 @@
 const path          = require('path'),
       menubar       = require('menubar'),
       BrowserWindow = require('browser-window'),
-      ipc           = require("electron").ipcMain
+      ipc           = require("electron").ipcMain;
 
 const index          = `file://${__dirname}/app.html`,
-      disconnectIcon = `file://${__dirname}/img/IconRed.png`
+      disconnectIcon = `file://${__dirname}/img/IconRed.png`;
 
 //Electron窗体配置
 const mainWindow = menubar({
@@ -13,15 +13,16 @@ const mainWindow = menubar({
   height: 300,
   index:  index,
   icon:   disconnectIcon
-})
+});
 
-var win
+//给窗口变量设置一个全局变量以防被释放
+let win;
 //防止 Chromium 降低隐藏的渲染进程优先级
 mainWindow.app.commandLine.appendSwitch('disable-renderer-backgrounding')
 
 //页面加载完毕事件
 mainWindow.on('ready', ()=> {
-  console.log('页面加载完毕！')
+  console.log('页面加载完毕！');
 })
 
 //监听icon事件
@@ -32,22 +33,22 @@ ipc.on('icon', (ev, key)=> {
     case 'disconnected': icon = `${__dirname}/img/IconRed.png`; break;
     default: console.log(`[icon]收到未知信号！`)
   }
-  mainWindow.tray.setImage(icon)
+  mainWindow.tray.setImage(icon);
 });
 
 //监听结束事件
 ipc.on('terminate', (ev)=> {
-  mainWindow.app.quit()
+  mainWindow.app.quit();
 });
 
 //监听改变窗口大小事件
 ipc.on('resize', (ev, data)=> {
-  mainWindow.window.setSize(data.width, data.height)
+  mainWindow.window.setSize(data.width, data.height);
 });
 
 //监听发生错误事件
 ipc.on('error', (ev, err)=> {
-  console.error(new Error(err.message))
+  console.error(new Error(err.message));
 });
 
 //监听创建窗口事件
@@ -62,25 +63,26 @@ ipc.on('create-window', (ev, config)=> {
     mainWindow.window.webContents.send('disconnected', true); //发送连接关闭消息
   });
 
-  ipc.once('window-ready', function () {
+  //监听视频窗口加载完成事件
+  ipc.once('window-ready', ()=> {
     // win.webContents.openDevTools()
-    win.webContents.send('peer-config', config)
-  })
+    win.webContents.send('peer-config', config);
+  });
 
-  ipc.on('connected', function () {
-    mainWindow.window.webContents.send('connected', true)
-  })
+  ipc.on('connected', ()=> {
+    mainWindow.window.webContents.send('connected', true);
+  });
 
-  ipc.on('disconnected', function () {
-    mainWindow.window.webContents.send('disconnected', true)
-  })
+  ipc.on('disconnected', ()=> {
+    mainWindow.window.webContents.send('disconnected', true);
+  });
 
-  ipc.on('show-window', function () {
-    win.show()
-  })
+  ipc.on('show-window', ()=> {
+    win.show();
+  });
 
-  ipc.on('stop-viewing', function () {
-    win.close()
-    mainWindow.window.webContents.send('disconnected', true)
-  })
-})
+  ipc.on('stop-viewing', ()=> {
+    win.close();
+    mainWindow.window.webContents.send('disconnected', true);
+  });
+});
