@@ -17,7 +17,7 @@
     "menubar": "^5.2.3",
     "multicast-dns": "^6.1.1",
     "nets": "^3.1.0",
-    "simple-peer": "^5.11.5",
+    "simple-peer": "^8.1.0",
     "ssejson": "^1.2.0",
     "vkey": "^1.0.0"
   },
@@ -25,12 +25,12 @@
     "robotjs": "^0.3.0"
   },
   "devDependencies": {
-    "browserify": "^9.0.3",
+    "browserify": "^14.3.0",
     "electron-packager": "^4.1.0",
     "electron-prebuilt": "^0.36.0",
-    "node-sass": "^3.4.1",
-    "standard": "^5.3.1",
-    "tachyons": "^1.2.0",
+    "node-sass": "^4.5.2",
+    "standard": "^10.0.2",
+    "tachyons": "^4.7.2",
     "wzrd": "^1.2.1"
   },
   "repository": {
